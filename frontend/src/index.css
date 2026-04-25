@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* Usamos comillas simples o dobles, asegurate de que esté el punto y coma */
+@plugin "@tailwindcss/typography";

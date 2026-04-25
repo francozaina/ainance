@@ -1,0 +1,10 @@
+# Dependencias
+node_modules/
+.DS_Store
+
+# Variables de entorno (¡Muy importante!)
+.env
+
+# Archivos de compilación
+dist/
+build/
