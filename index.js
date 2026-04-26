@@ -10,7 +10,7 @@ conectarDB();
 
 // Middlewares
 app.use(cors({
-  origin: "https://ainance-blond.vercel.app/" // La URL real que te dio el frontend
+  origin: "https://ainance-blond.vercel.app" // La URL real que te dio el frontend
 }));
 app.use(express.json());
 
