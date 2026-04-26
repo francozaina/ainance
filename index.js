@@ -27,6 +27,9 @@ if (process.env.NODE_ENV !== 'production') {
         console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
     });
 }
-
+// Debajo de los middlewares y antes de las otras rutas
+app.get('/', (req, res) => {
+    res.send('🚀 Ainance API funcionando correctamente');
+});
 // MODIFICACIÓN: Exportamos la app para las Serverless Functions de Vercel
 module.exports = app;
