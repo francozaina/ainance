@@ -72,7 +72,7 @@ function App() {
       <header className="max-w-4xl mx-auto mb-10 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Wallet className="text-blue-600" size={32} />
-          <h1 className="text-3xl font-extrabold tracking-tight italic">Ainance</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight italic">Ai.nance</h1>
         </div>
         <p className="text-slate-500 font-medium tracking-tight">
           Orquestador de cobros inteligentes con IA
@@ -175,7 +175,7 @@ function App() {
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-2 mb-6">
             <Sparkles className="text-purple-600" size={24} />
-            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Consultar al Experto Ainance</h2>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Consultar al Experto Ai.nance</h2>
           </div>
 
           <div className="space-y-4">
