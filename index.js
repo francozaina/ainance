@@ -9,7 +9,9 @@ const app = express();
 conectarDB();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "https://ainance-blond.vercel.app/" // La URL real que te dio el frontend
+}));
 app.use(express.json());
 
 // RUTAS
