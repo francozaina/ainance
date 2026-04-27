@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react'; // useRef used in CurrencySelect
 import {
   ArrowLeftRight,
   RefreshCw,
@@ -61,8 +61,10 @@ function fmtSmart(value: number): string {
 }
 
 // ────────────────────────────────────────────────────────────
-// Custom select — dropdown uses a portal via fixed positioning
-// so it escapes any overflow:hidden parent
+// Custom select — dropdown is position:absolute inside a
+// position:relative wrapper, so it always anchors to the
+// button regardless of scroll position.
+// The card parent must NOT have overflow:hidden (it doesn't).
 // ────────────────────────────────────────────────────────────
 function CurrencySelect({
   value,
@@ -74,32 +76,14 @@ function CurrencySelect({
   exclude?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const dropRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const current = META[value];
-
-  // Calculate dropdown position relative to viewport
-  const openMenu = () => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setDropPos({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: Math.max(rect.width, 240),
-      });
-    }
-    setOpen(o => !o);
-  };
 
   // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (
-        triggerRef.current && !triggerRef.current.contains(e.target as Node) &&
-        dropRef.current && !dropRef.current.contains(e.target as Node)
-      ) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -107,24 +91,12 @@ function CurrencySelect({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  // Close on scroll/resize (reposition would be complex; just close)
-  useEffect(() => {
-    if (!open) return;
-    const close = () => setOpen(false);
-    window.addEventListener('scroll', close, true);
-    window.addEventListener('resize', close);
-    return () => {
-      window.removeEventListener('scroll', close, true);
-      window.removeEventListener('resize', close);
-    };
-  }, [open]);
-
   return (
-    <>
+    // position:relative here is the anchor for the absolute dropdown
+    <div ref={wrapperRef} className="relative min-w-[200px]">
       <button
-        ref={triggerRef}
-        onClick={openMenu}
-        className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:border-blue-400 transition-all min-w-[200px] relative"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:border-blue-400 transition-all w-full"
       >
         <span className="text-xl leading-none">{current.flag}</span>
         <span className="font-bold">{current.code}</span>
@@ -134,15 +106,8 @@ function CurrencySelect({
 
       {open && (
         <div
-          ref={dropRef}
-          style={{
-            position: 'fixed',
-            top: dropPos.top,
-            left: dropPos.left,
-            width: dropPos.width,
-            zIndex: 9999,
-          }}
-          className="bg-white border border-slate-200 rounded-xl shadow-2xl max-h-72 overflow-y-auto"
+          // top:100% = flush below the button; z-[9999] floats above everything
+          className="absolute top-full left-0 mt-1 min-w-full w-60 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-72 overflow-y-auto z-[9999]"
         >
           {CURRENCIES.filter(c => c.code !== exclude).map(c => (
             <button
@@ -157,7 +122,7 @@ function CurrencySelect({
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
