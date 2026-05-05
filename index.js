@@ -10,11 +10,15 @@ conectarDB();
 
 // Middlewares
 app.use(cors({
-  origin: "https://ainance-blond.vercel.app" // La URL real que te dio el frontend
+  origin: [
+    "http://localhost:5173",
+    "https://ainance-blond.vercel.app"
+  ]
 }));
 app.use(express.json());
 
 // RUTAS
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/plataformas', require('./routes/plataformas'));
 app.use('/api/cotizaciones', require('./routes/cotizaciones'));
 app.use('/api/calculos', require('./routes/calculos'));

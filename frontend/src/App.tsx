@@ -2,25 +2,35 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Markdown from 'react-markdown';
 import type { Plataforma, ResultadoCalculo } from './types';
-import { 
-  Wallet, 
-  Calculator, 
-  ArrowRight, 
-  DollarSign, 
-  Info, 
-  Sparkles, 
-  MessageSquare, 
+import {
+  Wallet,
+  Calculator,
+  ArrowRight,
+  DollarSign,
+  Info,
+  Sparkles,
+  MessageSquare,
   Send,
   ArrowLeftRight,
+  LogIn,
+  LogOut,
+  User,
+  ChevronDown,
+  LayoutDashboard,
 } from 'lucide-react';
 import CurrencyScreen from './CurrencyScreen';
+import AuthScreen from './AuthScreen';
+import { useAuth } from './context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-type Screen = 'home' | 'currency';
+type Screen = 'home' | 'currency' | 'auth';
 
 function App() {
+  const { usuario, logout, estaAutenticado, cargando: cargandoAuth } = useAuth();
+
   const [screen, setScreen] = useState<Screen>('home');
+  const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false);
 
   const [plataformas, setPlataformas] = useState<Plataforma[]>([]);
   const [monto, setMonto] = useState<number>(0);
@@ -37,6 +47,19 @@ function App() {
       .catch((err: any) => console.error("Error cargando plataformas:", err));
   }, []);
 
+  useEffect(() => {
+    if (estaAutenticado && screen === 'auth') {
+      setScreen('home');
+    }
+  }, [estaAutenticado, screen]);
+
+  useEffect(() => {
+    if (!menuUsuarioAbierto) return;
+    const handler = () => setMenuUsuarioAbierto(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [menuUsuarioAbierto]);
+
   const handleCalcular = async () => {
     if (monto > 0 && plataformaSeleccionada) {
       try {
@@ -45,7 +68,7 @@ function App() {
           plataformaId: plataformaSeleccionada
         });
         setResultado(res.data);
-      } catch (err: any) {
+      } catch {
         alert("Error al calcular. Revisá que el backend esté corriendo.");
       }
     }
@@ -58,17 +81,26 @@ function App() {
     try {
       const res = await axios.post(`${API_URL}/api/chat`, { mensaje: mensajeChat });
       setRespuestaIA(res.data.respuesta);
-    } catch (err: any) {
+    } catch {
       setRespuestaIA("Che, hubo un problema conectando con el experto. ¿Tenés el backend prendido?");
     } finally {
       setCargandoIA(false);
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    setMenuUsuarioAbierto(false);
+    setScreen('home');
+  };
+
+  if (screen === 'auth') {
+    return <AuthScreen onVolver={() => setScreen('home')} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
-      {/* HEADER + NAV */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between py-3">
@@ -76,9 +108,71 @@ function App() {
               <Wallet className="text-blue-600" size={24} />
               <span className="text-xl font-extrabold tracking-tight italic text-slate-900">Ai.nance</span>
             </div>
+
             <p className="hidden sm:block text-slate-400 text-xs font-medium tracking-tight">
               Orquestador de cobros inteligentes con IA
             </p>
+
+            {cargandoAuth ? (
+              <div className="w-24 h-8 bg-slate-100 rounded-lg animate-pulse" />
+            ) : estaAutenticado ? (
+              <div className="relative" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={() => setMenuUsuarioAbierto(p => !p)}
+                  className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl transition-colors text-sm font-semibold text-slate-700"
+                >
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-white text-xs font-bold">
+                      {usuario?.nombre?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="hidden sm:block max-w-[100px] truncate">{usuario?.nombre}</span>
+                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${menuUsuarioAbierto ? 'rotate-180' : ''}`} />
+                </button>
+
+                {menuUsuarioAbierto && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <p className="text-sm font-bold text-slate-800 truncate">{usuario?.nombre}</p>
+                      <p className="text-xs text-slate-400 truncate">{usuario?.email}</p>
+                    </div>
+
+                    <button
+                      onClick={() => setMenuUsuarioAbierto(false)}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-not-allowed"
+                    >
+                      <LayoutDashboard size={16} className="text-slate-400" />
+                      Mis Finanzas
+                      <span className="ml-auto text-xs bg-blue-100 text-blue-600 font-bold px-1.5 py-0.5 rounded-full">Pronto</span>
+                    </button>
+
+                    <button
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                      onClick={() => setMenuUsuarioAbierto(false)}
+                    >
+                      <User size={16} className="text-slate-400" />
+                      Mi perfil
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors border-t border-slate-100"
+                    >
+                      <LogOut size={16} />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setScreen('auth')}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-sm shadow-blue-200"
+              >
+                <LogIn size={16} />
+                <span>Iniciar sesión</span>
+              </button>
+            )}
           </div>
 
           <nav className="flex gap-1 -mb-px">
@@ -108,14 +202,25 @@ function App() {
         </div>
       </header>
 
-      {/* SCREENS */}
       {screen === 'currency' ? (
         <CurrencyScreen />
       ) : (
         <div className="p-4 md:p-8">
           <main className="max-w-5xl mx-auto space-y-8">
-            
-            {/* SECCIÓN 1: CALCULADORA MANUAL */}
+
+            {estaAutenticado && (
+              <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl px-6 py-4 flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Bienvenido de vuelta,</p>
+                  <p className="text-white font-extrabold text-lg tracking-tight">{usuario?.nombre} 👋</p>
+                </div>
+                <div className="bg-white/10 border border-white/20 px-4 py-2 rounded-xl">
+                  <p className="text-white text-xs font-medium opacity-80">Gestor de finanzas</p>
+                  <p className="text-white text-sm font-bold">Próximamente →</p>
+                </div>
+              </div>
+            )}
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800">
@@ -205,7 +310,6 @@ function App() {
               </div>
             </div>
 
-            {/* SECCIÓN 2: CHATBOT IA */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-6">
                 <Sparkles className="text-purple-600" size={24} />
@@ -254,4 +358,3 @@ function App() {
 }
 
 export default App;
-
