@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import Markdown from 'react-markdown';
 import type { Plataforma, ResultadoCalculo } from './types';
 import {
   Wallet, Calculator, ArrowRight, DollarSign, Info,
   Sparkles, MessageSquare, Send, ArrowLeftRight,
-  LogIn, LogOut, User, ChevronDown, LayoutDashboard,
+  LogIn, LogOut, ChevronDown, LayoutDashboard,
 } from 'lucide-react';
 import CurrencyScreen from './CurrencyScreen';
 import AuthScreen from './AuthScreen';
@@ -32,7 +32,7 @@ function App() {
   useEffect(() => {
     axios.get(`${API_URL}/api/plataformas`)
       .then(res => setPlataformas(res.data))
-      .catch((err: any) => console.error("Error cargando plataformas:", err));
+      .catch((err: unknown) => console.error("Error cargando plataformas:", err));
   }, []);
 
   useEffect(() => {
@@ -71,7 +71,8 @@ function App() {
   if (screen === 'auth') return <AuthScreen onVolver={() => setScreen('home')} />;
 
   // ── NAV TABS ──────────────────────────────────────────────────
-  const navTabs: { key: Screen; label: string; icon: JSX.Element; soloAuth?: boolean }[] = [
+  // Corregido: Usamos ReactNode en lugar de JSX.Element para evitar el error de Vercel
+  const navTabs: { key: Screen; label: string; icon: ReactNode; soloAuth?: boolean }[] = [
     { key: 'home',     label: 'Calculadora', icon: <Calculator size={15} /> },
     { key: 'currency', label: 'Monedas',     icon: <ArrowLeftRight size={15} /> },
     { key: 'gestor',   label: 'Finanzas',icon: <LayoutDashboard size={15} />, soloAuth: true },
@@ -137,7 +138,6 @@ function App() {
           {/* Tabs */}
           <nav className="flex gap-1 -mb-px">
             {navTabs.map(tab => {
-              // "Mis Finanzas" aparece siempre pero con lock si no está autenticado
               const activo = screen === tab.key;
               return (
                 <button

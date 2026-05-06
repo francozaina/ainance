@@ -6,7 +6,6 @@ import {
     ChevronLeft,
     ChevronRight,
     TrendingDown,
-    Wallet,
     X,
     Lock,
     LogIn,
@@ -74,7 +73,7 @@ function GraficoTorta({ resumen, total }: { resumen: ResumenCategoria[], total: 
         );
     }
 
-    const cx = 90, cy = 90, r = 75, gap = 0.03;
+    const cx = 90, cy = 90, gap = 0.03;
     let acumulado = 0;
     const slices = resumen.map(item => {
         const fraccion = item.total / total;
@@ -298,7 +297,7 @@ export default function GestorScreen({ onIrALogin }: GestorScreenProps) {
         const obtenerDolarOficial = async () => {
             try {
                 const respuesta = await axios.get('https://dolarapi.com/v1/dolares');
-                const dolarOficial = respuesta.data.find((d: any) => d.casa === 'oficial' || d.nombre === 'Oficial');
+                const dolarOficial = respuesta.data.find((d: { casa?: string; nombre?: string; venta?: number }) => d.casa === 'oficial' || d.nombre === 'Oficial');
                 
                 if (dolarOficial && dolarOficial.venta) {
                     setCotizacionUsd(dolarOficial.venta);
