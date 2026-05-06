@@ -71,10 +71,10 @@ function App() {
   if (screen === 'auth') return <AuthScreen onVolver={() => setScreen('home')} />;
 
   // ── NAV TABS ──────────────────────────────────────────────────
-  const navTabs: { key: Screen; label: string; icon: ReactNode; soloAuth?: boolean }[] = [
+  const navTabs: { key: Screen; label: string; icon: ReactNode }[] = [
     { key: 'home',     label: 'Calculadora', icon: <Calculator size={15} /> },
     { key: 'currency', label: 'Monedas',     icon: <ArrowLeftRight size={15} /> },
-    { key: 'gestor',   label: 'Finanzas',icon: <LayoutDashboard size={15} />, soloAuth: true },
+    { key: 'gestor',   label: 'Finanzas',    icon: <LayoutDashboard size={15} /> },
   ];
 
   return (
@@ -150,9 +150,6 @@ function App() {
                 >
                   {tab.icon}
                   {tab.label}
-                  {tab.soloAuth && !estaAutenticado && (
-                    <span className="text-[10px] bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded-full ml-0.5">🔒</span>
-                  )}
                 </button>
               );
             })}
