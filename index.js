@@ -23,6 +23,7 @@ app.use('/api/plataformas', require('./routes/plataformas'));
 app.use('/api/cotizaciones', require('./routes/cotizaciones'));
 app.use('/api/calculos', require('./routes/calculos'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/gastos', require('./routes/gastos'));
 
 // MODIFICACIÓN: Evitamos que app.listen bloquee el despliegue en Vercel
 if (process.env.NODE_ENV !== 'production') {
