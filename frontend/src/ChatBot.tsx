@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Markdown from 'react-markdown';
 import { Sparkles, X, Send, Trash2, Bot } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -12,13 +13,21 @@ interface Mensaje {
     cargando?: boolean;
 }
 
-const SUGERENCIAS = [
+const SUGERENCIAS_GUEST = [
     '¿Qué plataforma me conviene para cobrar $500?',
     '¿Cuánto me queda si cobro $1000 por Payoneer?',
     '¿Cómo está el dólar blue hoy?',
 ];
 
+const SUGERENCIAS_AUTH = [
+    '¿Cuánto gasté en total este mes?',
+    '¿En qué categoría gasté más?',
+    '¿Qué plataforma me conviene para cobrar $500?',
+    '¿Cómo está el dólar blue hoy?',
+];
+
 export default function ChatBot() {
+    const { token, estaAutenticado } = useAuth();
     const [abierto, setAbierto] = useState(false);
     const [mensajes, setMensajes] = useState<Mensaje[]>([
         {
@@ -60,7 +69,8 @@ export default function ChatBot() {
         setCargando(true);
 
         try {
-            const res = await axios.post(`${API_URL}/api/chat`, { mensaje: pregunta });
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const res = await axios.post(`${API_URL}/api/chat`, { mensaje: pregunta }, { headers });
             setMensajes(prev => prev.map(m =>
                 m.id === idBot ? { ...m, texto: res.data.respuesta, cargando: false } : m
             ));
@@ -175,7 +185,7 @@ export default function ChatBot() {
                     {/* Sugerencias (solo si hay 1 mensaje, el de bienvenida) */}
                     {mensajes.length === 1 && (
                         <div className="px-4 pb-2 flex flex-col gap-1.5 shrink-0">
-                            {SUGERENCIAS.map(s => (
+                            {(estaAutenticado ? SUGERENCIAS_AUTH : SUGERENCIAS_GUEST).map(s => (
                                 <button
                                     key={s}
                                     onClick={() => enviar(s)}
