@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import axios from 'axios';
 import Markdown from 'react-markdown';
 import type { Plataforma, ResultadoCalculo } from './types';
@@ -71,7 +71,6 @@ function App() {
   if (screen === 'auth') return <AuthScreen onVolver={() => setScreen('home')} />;
 
   // ── NAV TABS ──────────────────────────────────────────────────
-  // Corregido: Usamos ReactNode en lugar de JSX.Element para evitar el error de Vercel
   const navTabs: { key: Screen; label: string; icon: ReactNode; soloAuth?: boolean }[] = [
     { key: 'home',     label: 'Calculadora', icon: <Calculator size={15} /> },
     { key: 'currency', label: 'Monedas',     icon: <ArrowLeftRight size={15} /> },
